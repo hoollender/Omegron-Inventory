@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 public class TractorServiceImpl implements TractorService {
 
-    private TractorRepository tractorRepository;
+    private final TractorRepository tractorRepository;
 
 
     public TractorServiceImpl(TractorRepository tractorRepository) {
