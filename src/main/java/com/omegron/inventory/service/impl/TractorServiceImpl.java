@@ -34,6 +34,7 @@ public class TractorServiceImpl implements TractorService {
         tractor.setYear(tractorDetailsDTO.year());
         tractor.setDescription(tractorDetailsDTO.description());
         tractor.setWorkHours(tractorDetailsDTO.workHours());
+        tractor.setImageUrl(tractorDetailsDTO.imageUrl());
         tractor.setEngine(tractorDetailsDTO.engineType());
         tractor.setTransmission(tractorDetailsDTO.transmissionType());
         tractorRepository.save(tractor);
