@@ -1,26 +1,27 @@
 package com.omegron.inventory.web;
 
-import com.omegron.inventory.OmegronInventoryApplication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.omegron.inventory.model.dto.AddTractorDTO;
 import com.omegron.inventory.model.enums.EngineTypeEnum;
 import com.omegron.inventory.model.enums.ManufacturersEnum;
 import com.omegron.inventory.model.enums.TransmissionTypeEnum;
 import com.omegron.inventory.repository.TractorRepository;
 import com.omegron.inventory.model.entity.Tractor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(classes = OmegronInventoryApplication.class)
+
+@SpringBootTest
 @AutoConfigureMockMvc
 public class TractorControllerIT {
 
@@ -29,11 +30,6 @@ public class TractorControllerIT {
 
     @Autowired
     private TractorRepository tractorRepository;
-
-    @BeforeEach
-    void setUp() {
-        tractorRepository.deleteAll();
-    }
 
     @Test
     void testGetAllTractors() throws Exception {
@@ -61,10 +57,10 @@ public class TractorControllerIT {
         tractorRepository.save(tractor1);
         tractorRepository.save(tractor2);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/tractors/all")
+        mockMvc.perform(get("/tractors/all")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.length()").value(tractorRepository.count()));
     }
 
     @Test
@@ -82,12 +78,17 @@ public class TractorControllerIT {
 
         tractor = tractorRepository.save(tractor);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/tractors/details/" + tractor.getId())
+        mockMvc.perform(get("/tractors/details/" + tractor.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.manufacturer").value("JohnDeere"))
-                .andExpect(jsonPath("$.model").value("Model1"))
-                .andExpect(jsonPath("$.year").value(2020));
+                .andExpect(jsonPath("$.model").value(tractor.getModel()))
+                .andExpect(jsonPath("$.year").value(tractor.getYear()))
+                .andExpect(jsonPath("$.description").value(tractor.getDescription()))
+                .andExpect(jsonPath("$.workHours").value(tractor.getWorkHours()))
+                .andExpect(jsonPath("$.imageUrl").value(tractor.getImageUrl()))
+                .andExpect(jsonPath("$.engineType").value(tractor.getEngine().name()))
+                .andExpect(jsonPath("$.transmissionType").value(tractor.getTransmission().name()));
     }
 
     @Test
@@ -103,7 +104,7 @@ public class TractorControllerIT {
                 TransmissionTypeEnum.CVT
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/tractors/add")
+        mockMvc.perform(post("/tractors/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -135,7 +136,7 @@ public class TractorControllerIT {
 
         tractor = tractorRepository.save(tractor);
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/tractors/update/" + tractor.getId())
+        mockMvc.perform(put("/tractors/update/" + tractor.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -177,7 +178,7 @@ public class TractorControllerIT {
 
         tractor = tractorRepository.save(tractor);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/tractors/" + tractor.getId())
+        mockMvc.perform(delete("/tractors/" + tractor.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 

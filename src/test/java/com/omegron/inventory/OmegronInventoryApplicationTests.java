@@ -9,5 +9,4 @@ class OmegronInventoryApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }

@@ -1,15 +1,14 @@
 package com.omegron.inventory.web;
 
-import com.omegron.inventory.OmegronInventoryApplication;
 import com.omegron.inventory.model.dto.AddLandLordDTO;
 import com.omegron.inventory.model.entity.LandLord;
 import com.omegron.inventory.repository.LandLordRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
@@ -17,11 +16,12 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-@SpringBootTest(classes = OmegronInventoryApplication.class)
+@SpringBootTest
 @AutoConfigureMockMvc
+
 public class LandLordControllerIT {
 
     @Autowired
@@ -29,11 +29,6 @@ public class LandLordControllerIT {
 
     @Autowired
     private LandLordRepository landLordRepository;
-
-    @BeforeEach
-    void setUp() {
-        landLordRepository.deleteAll();
-    }
 
     @Test
     void testGetAllLandLords() throws Exception {
@@ -63,11 +58,10 @@ public class LandLordControllerIT {
         landLordRepository.save(landLord1);
         landLordRepository.save(landLord2);
 
-        mockMvc.perform(MockMvcRequestBuilders
-                        .get("/landlords/all")
+        mockMvc.perform(get("/landlords/all")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.length()").value(landLordRepository.count()));
     }
 
     @Test
@@ -86,12 +80,18 @@ public class LandLordControllerIT {
 
         landLord = landLordRepository.save(landLord);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/landlords/details/" + landLord.getId())
+        mockMvc.perform(get("/landlords/details/" + landLord.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("Pesho"))
-                .andExpect(jsonPath("$.middleName").value("Test"))
-                .andExpect(jsonPath("$.lastName").value("Peshov"));
+                .andExpect(jsonPath("$.firstName").value(landLord.getFirstName()))
+                .andExpect(jsonPath("$.middleName").value(landLord.getMiddleName()))
+                .andExpect(jsonPath("$.lastName").value(landLord.getLastName()))
+                .andExpect(jsonPath("$.dateOfBirth").value(landLord.getDateOfBirth().toString()))
+                .andExpect(jsonPath("$.address").value(landLord.getAddress()))
+                .andExpect(jsonPath("$.personalNumber").value(landLord.getPersonalNumber()))
+                .andExpect(jsonPath("$.personalID").value(landLord.getPersonalID()))
+                .andExpect(jsonPath("$.validityID").value(landLord.getValidityID().toString()))
+                .andExpect(jsonPath("$.dateOfIssue").value(landLord.getDateOfIssue().toString()));
     }
 
     @Test
@@ -108,7 +108,7 @@ public class LandLordControllerIT {
                 LocalDate.of(2020, 1, 1)
         );
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/landlords/add")
+        mockMvc.perform(post("/landlords/add")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -188,7 +188,7 @@ public class LandLordControllerIT {
 
         landLord = landLordRepository.save(landLord);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/landlords/" + landLord.getId())
+        mockMvc.perform(delete("/landlords/" + landLord.getId())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
